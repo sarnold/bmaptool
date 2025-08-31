@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -19,75 +18,44 @@ jobs:
       PYTHONIOENCODING: utf-8
       PIP_DOWNLOAD_CACHE: ${{ github.workspace }}/../.pip_download_cache
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-22.04, ubuntu-24.04, macos-latest]
         python-version:
           - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
-          # Testing with native host python is required in order to test the
-          # GPG code, since it must use the host python3-gpg package
-          - "native"
+          - "3.13"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - if: matrix.python-version != 'native'
-        name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
-      - if: matrix.python-version == 'native'
-        name: Setup Native Python
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
         run: |
-          sudo apt-get install -y python3 python3-pip libgpgme11-dev python3-gpg
+          sudo apt-get -qq update
+          sudo apt-get install -y pbzip2 pigz lzop liblz4-tool libgpgme11-dev python3-gpg
 
-      - name: Install dependencies
+      - name: Macos dependencies
+        if: runner.os == 'MacOS'
         run: |
-          sudo apt-get install -y pbzip2 pigz lzop liblz4-tool
-          python3 -m pip install --upgrade pip
-          python3 -m pip install build
+          brew install gpgme
 
-      - name: Build package
+      - name: Dev dependencies
         run: |
-          python3 -m build
-
-      - name: Install package
-        run: |
-          python3 -m pip install -e .[dev]
+          python -m pip install --upgrade pip
+          pip install tox tox-gh-actions
 
       - name: Run tests
         run: |
-          python3 -m unittest -vb
-
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
-    - name: Linux dependencies
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get -qq update
-        sudo apt-get install -y pbzip2 pigz lzop liblz4-tool libgpgme11-dev
-
-    - name: Macos dependencies
-      if: runner.os == 'MacOS'
-      run: |
-        brew install gpgme
-
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
-
-    - name: Run tests
-      run: |
-        tox -- --slow
-      env:
-        PLATFORM: ${{ matrix.os }}
+          tox -- --slow
+        env:
+          PLATFORM: ${{ matrix.os }}

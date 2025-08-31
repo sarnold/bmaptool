@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
 
     steps:
       - name: Set git crlf/eol
@@ -35,7 +35,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get -qq update
-          sudo apt-get install -y libgpgme-dev
+          sudo apt-get install -y libgpgme-dev python3-gpg pbzip2 pigz lzop liblz4-tool
 
       - name: Macos dependencies
         if: runner.os == 'MacOS'
