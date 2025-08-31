@@ -1,6 +1,7 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
     # release on tag push
     tags:
@@ -19,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-latest]
-        python-version: [3.8, 3.9, '3.10', '3.11', '3.12']
+        python-version: [3.8, 3.9, '3.10', '3.11', '3.12', '3.13']
 
     steps:
     - name: Set git crlf/eol
@@ -27,7 +28,7 @@ jobs:
         git config --global core.autocrlf false
         git config --global core.eol lf
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 0
 
@@ -35,7 +36,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get -qq update
-        sudo apt-get install -y libgpgme-dev
+        sudo apt-get install -y pbzip2 pigz lzop liblz4-tool libgpgme11-dev python3-gpg
 
     - name: Macos dependencies
       if: runner.os == 'MacOS'
@@ -63,12 +64,11 @@ jobs:
         tox -e build
 
     - name: Upload artifacts
-      if: matrix.python-version == 3.9 && runner.os == 'Linux'
+      if: matrix.python-version == 3.10 && runner.os == 'Linux'
       uses: actions/upload-artifact@v4
       with:
-        path: |
-          ./dist/*.whl
-          ./dist/*.tar.gz
+        name: packages
+        path: dist
 
   create_release:
     name: Create Release
@@ -82,32 +82,39 @@ jobs:
           echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
           echo ${{ env.VERSION }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       # download all artifacts to project dir
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v5
+        with:
+          name: packages
+          path: packages
+
+      - name: check artifacts
+        run: |
+          find . -maxdepth 3 -name bmap\*
 
       - name: Generate changes file
-        uses: sarnold/gitchangelog-action@main
+        uses: sarnold/gitchangelog-action@915234f151ceffb7a8c4f76de77e4ae321087b8f  # v1.1.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN}}
 
       - name: Create release
         id: create_release
-        uses: softprops/action-gh-release@main
+        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8  # v2.3.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.VERSION }}
-          name: Release v${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
           body_path: CHANGES.md
           draft: false
           prerelease: false
           files: |
-            artifact/*.whl
-            artifact/*.gz
+            packages/*.whl
+            packages/*.gz
 
   #docs:
     #name: Release docs
