@@ -43,9 +43,15 @@ import subprocess
 import re
 import urllib.parse
 from typing import NamedTuple
+
 from . import BmapCreate, BmapCopy, BmapHelpers, TransRead
 
-VERSION = "3.9.0"
+if sys.version_info < (3, 10):
+    from importlib_metadata import version
+else:
+    from importlib.metadata import version
+
+VERSION = version('bmaptool')
 
 log = logging.getLogger()  # pylint: disable=C0103
 
@@ -777,7 +783,7 @@ def parse_arguments():
 
     # The --version option
     parser.add_argument(
-        "--version", action="version", version="%(prog)s " + "%s" % VERSION
+        "--version", action="version", version=f"%(prog)s {VERSION}"
     )
 
     # The --quiet option
