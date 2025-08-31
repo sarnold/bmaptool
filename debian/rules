@@ -1,4 +1,8 @@
 #!/usr/bin/make -f
 
+export DH_VERBOSE=1
+export PYBUILD_NAME=bmaptool
+export PYBUILD_DISABLE_python3.9=test
+
 %:
 	dh $@ --buildsystem=pybuild
