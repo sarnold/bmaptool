@@ -27,13 +27,14 @@ and returns an instance of the class.
 #   * Too many instance attributes (R0902)
 # pylint: disable=R0902
 
-import os
-import errno
-import struct
 import array
+import errno
 import fcntl
-import tempfile
 import logging
+import os
+import struct
+import tempfile
+
 from . import BmapHelpers
 
 _log = logging.getLogger(__name__)  # pylint: disable=C0103
@@ -234,9 +235,7 @@ class FilemapSeek(_FilemapBase):
         try:
             tmp_obj = tempfile.TemporaryFile("w+", dir=directory)
         except OSError as err:
-            raise ErrorNotSupp(
-                'cannot create a temporary in "%s": %s' % (directory, err)
-            )
+            raise ErrorNotSupp('cannot create a temporary in "%s": %s' % (directory, err))
 
         try:
             os.ftruncate(tmp_obj.fileno(), self.block_size)
@@ -387,8 +386,7 @@ class FilemapFiemap(_FilemapBase):
 
         if self.blocks_cnt != 0 and (block < 0 or block >= self.blocks_cnt):
             raise Error(
-                "bad block number %d, should be within [0, %d]"
-                % (block, self.blocks_cnt)
+                "bad block number %d, should be within [0, %d]" % (block, self.blocks_cnt)
             )
 
         # Initialize the 'struct fiemap' part of the buffer. We use the
@@ -426,9 +424,7 @@ class FilemapFiemap(_FilemapBase):
                 )
                 _log.debug(errstr)
                 raise ErrorNotSupp(errstr)
-            raise Error(
-                "the FIEMAP ioctl failed for '%s': %s" % (self._image_path, err)
-            )
+            raise Error("the FIEMAP ioctl failed for '%s': %s" % (self._image_path, err))
 
         return struct.unpack(_FIEMAP_FORMAT, self._buf[:_FIEMAP_SIZE])
 
@@ -548,8 +544,7 @@ class FilemapFiemap(_FilemapBase):
 
         if hole_first < start + count:
             _log.debug(
-                "FilemapFiemap: yielding range (%d, %d)"
-                % (hole_first, start + count - 1)
+                "FilemapFiemap: yielding range (%d, %d)" % (hole_first, start + count - 1)
             )
             yield (hole_first, start + count - 1)
 

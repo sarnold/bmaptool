@@ -56,15 +56,15 @@ also contribute to the mapped blocks and are also copied.
 # pylint: disable=R0913
 # pylint: disable=R0915
 
+import _thread as thread
+import datetime
+import hashlib
+import logging
 import os
+import queue
 import re
 import stat
 import sys
-import hashlib
-import logging
-import datetime
-import queue
-import _thread as thread
 from typing import List, Optional
 
 from defusedxml import DefusedXmlException
@@ -349,8 +349,7 @@ class BmapCopy(object):
         if self.image_size is not None and self.image_size != image_size:
             raise Error(
                 "cannot set image size to %d bytes, it is known to "
-                "be %d bytes (%s)"
-                % (image_size, self.image_size, self.image_size_human)
+                "be %d bytes (%s)" % (image_size, self.image_size, self.image_size_human)
             )
 
         self.image_size = image_size
@@ -825,8 +824,7 @@ class BmapBdevCopy(BmapCopy):
                 os.lseek(self._f_dest.fileno(), 0, os.SEEK_SET)
             except OSError as err:
                 raise Error(
-                    "cannot seed block device '%s': %s "
-                    % (self._dest_path, err.strerror)
+                    "cannot seed block device '%s': %s " % (self._dest_path, err.strerror)
                 )
 
             if bdev_size < self.image_size:

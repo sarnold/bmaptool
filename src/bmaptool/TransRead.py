@@ -25,18 +25,19 @@ This module uses the following system programs for decompressing: pbzip2, bzip2,
 gzip, pigz, xz, lzop, lz4, zstd, tar and unzip.
 """
 
-import os
-import io
 import errno
-import sys
-import logging
-import threading
-import subprocess
-import netrc
 import http.client
+import io
+import logging
+import netrc
+import os
+import subprocess
+import sys
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
+
 from . import BmapHelpers
 
 _log = logging.getLogger(__name__)  # pylint: disable=C0103
@@ -139,8 +140,7 @@ def _decode_sshpass_exit_code(code):
         result = "invalid/incorrect password"
     elif code == 6:
         result = (
-            "host public key is unknown. sshpass exits without "
-            "confirming the new key"
+            "host public key is unknown. sshpass exits without " "confirming the new key"
         )
     elif code == 255:
         # SSH result =s 255 on any error
