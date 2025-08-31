@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bmaptool"
 description = "BMAP tools"
-dynamic = ["version"]
+dynamic = ["version", "license"]
 dependencies = [
     # NOTE: gpg is not installed because it must come from the system GPG package
     # (e.g. python3-gpg on Ubuntu) and not from PyPi. The PyPi version is very old
@@ -30,7 +30,9 @@ maintainers = [
 
 ]
 readme = "README.md"
-license = "GPL-2.0-or-later"
+# license string is not valid in less than py39, see setup.py
+# license = "GPL-2.0-or-later"
+# license-files = ["LICEN[CS]E"]
 
 classifiers = [
     "Development Status :: 5 - Production/Stable",
