@@ -75,7 +75,7 @@ bmaptool = "bmaptool.CLI:main"
 [tool.setuptools_scm]
 
 [tool.pytest.ini_options]
-minversion = "7.0"
+minversion = "6.0"
 testpaths = ["tests",]
 log_cli =  false
 doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE",]
