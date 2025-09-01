@@ -56,17 +56,20 @@ also contribute to the mapped blocks and are also copied.
 # pylint: disable=R0913
 # pylint: disable=R0915
 
+import _thread as thread
+import datetime
+import hashlib
+import logging
 import os
+import queue
 import re
 import stat
 import sys
-import hashlib
-import logging
-import datetime
-import queue
-import _thread as thread
-from typing import Optional
-from xml.etree import ElementTree
+from typing import List, Optional
+
+from defusedxml import DefusedXmlException
+from defusedxml.ElementTree import parse
+
 from .BmapHelpers import human_size
 
 _log = logging.getLogger(__name__)  # pylint: disable=C0103
@@ -111,7 +114,7 @@ class SysfsChange:
         self.suppress_ioerrors = suppress_ioerrors
         self.old_value = ""
         self.modified = False
-        self.options = []
+        self.options: List[str] = []
         self.error: Optional[IOError] = None
 
     def _read(self):
@@ -346,8 +349,7 @@ class BmapCopy(object):
         if self.image_size is not None and self.image_size != image_size:
             raise Error(
                 "cannot set image size to %d bytes, it is known to "
-                "be %d bytes (%s)"
-                % (image_size, self.image_size, self.image_size_human)
+                "be %d bytes (%s)" % (image_size, self.image_size, self.image_size_human)
             )
 
         self.image_size = image_size
@@ -393,12 +395,12 @@ class BmapCopy(object):
 
     def _parse_bmap(self):
         """
-        Parse the bmap file and initialize corresponding class instance attributs.
+        Parse the bmap file and initialize corresponding class instance attributes.
         """
 
         try:
-            self._xml = ElementTree.parse(self._f_bmap)
-        except ElementTree.ParseError as err:
+            self._xml = parse(self._f_bmap)
+        except DefusedXmlException as err:
             # Extract the erroneous line with some context
             self._f_bmap.seek(0)
             xml_extract = ""
@@ -822,8 +824,7 @@ class BmapBdevCopy(BmapCopy):
                 os.lseek(self._f_dest.fileno(), 0, os.SEEK_SET)
             except OSError as err:
                 raise Error(
-                    "cannot seed block device '%s': %s "
-                    % (self._dest_path, err.strerror)
+                    "cannot seed block device '%s': %s " % (self._dest_path, err.strerror)
                 )
 
             if bdev_size < self.image_size:

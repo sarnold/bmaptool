@@ -1,38 +1,65 @@
+[build-system]  # these versions are valid on python 3.7 and up
+requires = [
+    "setuptools>=61",
+    "setuptools_scm>=7",
+]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "bmaptool"
 description = "BMAP tools"
-dynamic = ["version"]
+dynamic = ["version", "license"]
 dependencies = [
     # NOTE: gpg is not installed because it must come from the system GPG package
     # (e.g. python3-gpg on Ubuntu) and not from PyPi. The PyPi version is very old
     # and no longer functions correctly
     #"gpg >= 1.10.0",
+    "defusedxml",
+    'importlib-metadata>=4.6; python_version < "3.10"',
 ]
-required-python = ">= 3.8"
+requires-python = ">=3.8"
 authors = [
+    {name = "Artem Bityutskiy"},
+    {email = "artem.bityutskiy@linux.intel.com"},
+]
+
+maintainers = [
     {name = "Joshua Watt", email = "JPEWhacker@gmail.com"},
     {name = "Trevor Woerner", email = "twoerner@gmail.com"},
     {name = "Tim Orling", email = "ticotimo@gmail.com"},
 
 ]
 readme = "README.md"
+# license string is not valid in less than py39, see setup.py
+# license = "GPL-2.0-or-later"
+# license-files = ["LICEN[CS]E"]
+
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Build Tools",
     "Topic :: Software Development :: Embedded Systems",
-    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 [project.optional-dependencies]
 dev = [
     "black >= 22.3.0",
+    "pylint >= 3.1.0",
+]
+cov = [
+    "coverage",
+    "coverage_python_version",
+]
+test = [
+    "pytest",
+    "pytest-cov",
     "six >= 1.16.0",
 ]
 
@@ -40,13 +67,78 @@ dev = [
 Homepage = "https://github.com/yoctoproject/bmaptool"
 Repository = "https://github.com/yoctoproject/bmaptool.git"
 Issues = "https://github.com/yoctoproject/bmaptool/issues"
+Changelog = "https://github.com/yoctoproject/bmaptool/blob/main/CHANGELOG.md"
 
 [project.scripts]
 bmaptool = "bmaptool.CLI:main"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[tool.setuptools_scm]
 
-[tool.hatch.version]
-path = "src/bmaptool/CLI.py"
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests",]
+log_cli =  false
+doctest_optionflags = ["ELLIPSIS", "NORMALIZE_WHITESPACE",]
+addopts = "-ra -q -p no:warnings --capture=fd"
+markers = [
+    "slow: marks tests as slow (run with --slow)",
+    "linux: runs on this platform (or not)",
+    "darwin",
+    "win32",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src/bmaptool"]
+plugins = ["coverage_python_version"]
+
+[tool.coverage.paths]
+source = [
+    "src/bmaptool",
+    ".tox/*/site-packages"
+]
+
+[tool.coverage.report]
+fail_under = 40
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "raise AssertionError",
+    "if typing.TYPE_CHECKING:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.black]
+line-length = 90
+skip-string-normalization = true
+include = '\.py$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | docs
+  | dist
+  | tests
+)/
+'''
+
+[tool.pycln]
+all = true
+
+[tool.isort]
+line_length = 72
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.bandit]
+exclude_dirs = ["contrib"]

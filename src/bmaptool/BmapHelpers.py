@@ -20,7 +20,7 @@ This module contains various shared helper functions.
 
 import os
 import struct
-import subprocess
+import subprocess as sp
 from fcntl import ioctl
 from subprocess import PIPE
 
@@ -104,7 +104,7 @@ def get_file_system_type(path):
     """Return the file system type for 'path'."""
 
     abspath = os.path.realpath(path)
-    proc = subprocess.Popen(["df", "-PT", "--", abspath], stdout=PIPE, stderr=PIPE)
+    proc = sp.Popen(["df", "-PT", "--", abspath], stdout=PIPE, stderr=PIPE, text=True)
     stdout, stderr = proc.communicate()
 
     # Parse the output of subprocess, for example:

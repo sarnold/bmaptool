@@ -29,23 +29,29 @@ source.tizen.org/documentation/reference/bmaptool
 # pylint: disable=R0912
 
 import argparse
-import sys
-import os
-import stat
-import time
-import logging
-import tempfile
-import traceback
-import shutil
 import io
+import logging
+import os
 import pathlib
-import subprocess
 import re
+import shutil
+import stat
+import subprocess
+import sys
+import tempfile
+import time
+import traceback
 import urllib.parse
 from typing import NamedTuple
-from . import BmapCreate, BmapCopy, BmapHelpers, TransRead
 
-VERSION = "3.9.0"
+from . import BmapCopy, BmapCreate, BmapHelpers, TransRead
+
+if sys.version_info < (3, 10):
+    from importlib_metadata import version
+else:
+    from importlib.metadata import version
+
+VERSION = version('bmaptool')
 
 log = logging.getLogger()  # pylint: disable=C0103
 
@@ -615,9 +621,7 @@ def copy_command(args):
     )
 
     if args.bmap_sig and not bmap_obj:
-        error_out(
-            "the bmap signature file was specified, but bmap file was " "not found"
-        )
+        error_out("the bmap signature file was specified, but bmap file was " "not found")
 
     f_obj = verify_bmap_signature(args, bmap_obj, bmap_path, image_obj.is_url)
     if f_obj:
@@ -639,12 +643,7 @@ def copy_command(args):
         error_out(err)
 
     # Print the progress indicator while copying
-    if (
-        not args.quiet
-        and not args.debug
-        and sys.stderr.isatty()
-        and sys.stdout.isatty()
-    ):
+    if not args.quiet and not args.debug and sys.stderr.isatty() and sys.stdout.isatty():
         writer.set_progress_indicator(sys.stderr, "bmaptool: info: %d%% copied")
 
     start_time = time.time()
@@ -764,8 +763,7 @@ def create_command(args):
 
     if creator.mapped_cnt == creator.blocks_cnt:
         log.warning(
-            "all %s are mapped, no holes in '%s'"
-            % (creator.image_size_human, args.image)
+            "all %s are mapped, no holes in '%s'" % (creator.image_size_human, args.image)
         )
         log.warning("was the image handled incorrectly and holes " "were expanded?")
 
@@ -776,9 +774,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description=text, prog="bmaptool")
 
     # The --version option
-    parser.add_argument(
-        "--version", action="version", version="%(prog)s " + "%s" % VERSION
-    )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
 
     # The --quiet option
     text = "be quiet"

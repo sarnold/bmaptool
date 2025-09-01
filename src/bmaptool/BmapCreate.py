@@ -48,8 +48,9 @@ This module uses the FIEMAP ioctl to detect holes.
 # pylint: disable=R0902,R0903
 
 import hashlib
-from .BmapHelpers import human_size
+
 from . import Filemap
+from .BmapHelpers import human_size
 
 # The bmap format version we generate.
 #
@@ -155,9 +156,7 @@ class BmapCreate(object):
         try:
             self._cs_len = len(hashlib.new(self._cs_type).hexdigest())
         except ValueError as err:
-            raise Error(
-                'cannot initialize hash function "%s": %s' % (self._cs_type, err)
-            )
+            raise Error('cannot initialize hash function "%s": %s' % (self._cs_type, err))
 
         if hasattr(image, "read"):
             self._f_image = image
@@ -260,9 +259,7 @@ class BmapCreate(object):
         self._chksum_pos = self._f_bmap.tell()
 
         xml = "0" * self._cs_len + " </BmapFileChecksum>\n\n"
-        xml += (
-            "    <!-- The block map which consists of elements which may either be a\n"
-        )
+        xml += "    <!-- The block map which consists of elements which may either be a\n"
         xml += "         range of blocks or a single block. The 'chksum' attribute\n"
         xml += "         (if present) is the checksum of this block range. -->\n"
         xml += "    <BlockMap>\n"
@@ -283,9 +280,7 @@ class BmapCreate(object):
         self._f_bmap.write(xml)
 
         self._f_bmap.seek(self._mapped_count_pos1)
-        self._f_bmap.write(
-            "%s or %.1f%%" % (self.mapped_size_human, self.mapped_percent)
-        )
+        self._f_bmap.write("%s or %.1f%%" % (self.mapped_size_human, self.mapped_percent))
 
         self._f_bmap.seek(self._mapped_count_pos2)
         self._f_bmap.write("%u" % self.mapped_cnt)
